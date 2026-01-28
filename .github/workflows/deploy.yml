@@ -1,0 +1,78 @@
+# ╔════════════════════════════════════════════════════════════════════════════╗
+# ║  NOM DU WORKFLOW                                                           ║
+# ╚════════════════════════════════════════════════════════════════════════════╝
+# Ce nom s'affiche dans l'onglet "Actions" de GitHub
+name: Déployer sur GitHub Pages
+
+# ╔════════════════════════════════════════════════════════════════════════════╗
+# ║  DÉCLENCHEURS — Quand le workflow s'exécute ?                              ║
+# ╚════════════════════════════════════════════════════════════════════════════╝
+on:
+  # Déclenchement automatique à chaque push sur la branche main
+  push:
+    branches: ['main']
+  # Permet aussi de lancer le workflow manuellement depuis GitHub
+  workflow_dispatch:
+
+# ╔════════════════════════════════════════════════════════════════════════════╗
+# ║  PERMISSIONS — Ce que le robot a le droit de faire                         ║
+# ╚════════════════════════════════════════════════════════════════════════════╝
+permissions:
+  contents: read       # Lire le code source du dépôt
+  pages: write         # Écrire sur GitHub Pages
+  id-token: write      # S'authentifier pour le déploiement sécurisé
+
+# ╔════════════════════════════════════════════════════════════════════════════╗
+# ║  CONCURRENCE — Éviter les conflits entre déploiements                      ║
+# ╚════════════════════════════════════════════════════════════════════════════╝
+concurrency:
+  group: 'pages'              # Tous les déploiements Pages sont dans ce groupe
+  cancel-in-progress: true    # Si un nouveau push arrive, annuler l'ancien
+
+# ╔════════════════════════════════════════════════════════════════════════════╗
+# ║  JOBS — Les tâches à exécuter                                              ║
+# ╚════════════════════════════════════════════════════════════════════════════╝
+jobs:
+
+  # ┌──────────────────────────────────────────────────────────────────────────┐
+  # │  JOB 1 : build — Compiler l'application Vue                              │
+  # └──────────────────────────────────────────────────────────────────────────┘
+  build:
+    runs-on: ubuntu-latest    # Exécuter sur un serveur Ubuntu (gratuit)
+    steps:
+      # Étape 1 : Télécharger le code source depuis GitHub
+      - uses: actions/checkout@v4
+
+      # Étape 2 : Installer Node.js sur le serveur
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20    # Version de Node.js
+          cache: 'npm'        # Mettre en cache node_modules (plus rapide)
+
+      # Étape 3 : Installer les dépendances (package.json)
+      - run: npm ci
+
+      # Étape 4 : Compiler l'application Vue → HTML/CSS/JS
+      - run: npm run build
+
+      # Étape 5 : Préparer les fichiers pour GitHub Pages
+      - uses: actions/configure-pages@v4
+
+      # Étape 6 : Empaqueter le dossier dist/ pour le déploiement
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'       # Le dossier contenant le site compilé
+
+  # ┌──────────────────────────────────────────────────────────────────────────┐
+  # │  JOB 2 : deploy — Publier le site sur Internet                           │
+  # └──────────────────────────────────────────────────────────────────────────┘
+  deploy:
+    environment:
+      name: github-pages      # Environnement GitHub Pages
+      url: ${{ steps.deployment.outputs.page_url }}  # URL du site déployé
+    runs-on: ubuntu-latest    # Serveur Ubuntu pour le déploiement
+    needs: build              # ⚠️ Attend que le job "build" soit terminé !
+    steps:
+      # Étape unique : Déployer les fichiers sur GitHub Pages
+      - uses: actions/deploy-pages@v4
+        id: deployment        # Identifiant pour récupérer l'URL
