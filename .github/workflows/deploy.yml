@@ -10,7 +10,7 @@ name: Déployer sur GitHub Pages
 on:
   # Déclenchement automatique à chaque push sur la branche main
   push:
-    branches: ['main']
+    branches: ['master']
   # Permet aussi de lancer le workflow manuellement depuis GitHub
   workflow_dispatch:
 
