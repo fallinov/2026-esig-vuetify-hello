@@ -1,6 +1,8 @@
 <script setup>
   // import { computed, ref } from 'vue'
   const newPokemon = ref('Charizard')
+  const inputNewPokemon = useTemplateRef('inputNewPokemon') // Champ de saisie
+  const showElectricOnly = ref(false)
   const pokemons = ref([
     { name: 'Pikachu', type: 'Electric' },
     { name: 'Bulbasaur', type: 'Grass' },
@@ -9,30 +11,45 @@
     { name: 'Jolteon', type: 'Electric' },
   ])
 
-  // TODO: ref pour le nom
   // TODO: ref pour le filtre
   // TODO: computed filteredPokemons
-  // TODO: function addPokemon()
   function addPokemon () {
-    alert('Coucou !')
+    // Ajoute un pokémon à la fin du tableau
+    pokemons.value.push({ name: newPokemon.value, type: 'Electric' })
+    // On vide le champ
+    newPokemon.value = ''
+    // Remet le focus au champ
+    inputNewPokemon.value.focus()
   }
+
+  // Computed qui filtre les pokémons
+  const filterdPokemons = computed(() => {
+    if (showElectricOnly.value) {
+      return pokemons.value.filter(p => p.type === 'Electric')
+    }
+    return pokemons.value
+  })
 </script>
 
 <template>
   <main>
     <h1>Mon Pokédex</h1>
     <p>{{ newPokemon }}</p>
-    <!-- TODO: input + button -->
     <div>
-      <input v-model="newPokemon" type="text">
+      <input ref="inputNewPokemon" v-model="newPokemon" type="text" @keyup.enter="addPokemon">
       <button @click="addPokemon">Ajouter</button>
     </div>
     <!-- TODO: checkbox filtre -->
-    <!-- TODO: v-for liste -->
     <h2>Mes pokémons</h2>
-    <p v-if="pokemons.length === 0">Aucun pokémon attrapé !</p>
+    <div>
+      <label>
+        <input v-model="showElectricOnly" type="checkbox">
+        Afficher uniquement les "Electric"
+      </label>
+    </div>
+    <p v-if="filterdPokemons.length === 0">Aucun pokémon attrapé !</p>
     <ul v-else>
-      <li v-for="p in pokemons" :key="p.name">
+      <li v-for="p in filterdPokemons" :key="p.name">
         {{ p.name }}
         ({{ p.type }})
       </li>
