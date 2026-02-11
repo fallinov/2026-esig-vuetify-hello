@@ -14,7 +14,7 @@ import Vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: '/2026-esig-vuetify-hello/',
+  base: process.env.VITE_BASE_URL || '/',
   plugins: [
     VueRouter(),
     Layouts(),
