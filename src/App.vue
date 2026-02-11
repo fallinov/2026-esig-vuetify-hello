@@ -33,7 +33,7 @@
 
 <template>
   <main>
-    <h1>Mon Pokédex</h1>
+    <h1>Mon Pokédex sur GitHub</h1>
     <p>{{ newPokemon }}</p>
     <div>
       <input ref="inputNewPokemon" v-model="newPokemon" type="text" @keyup.enter="addPokemon">
