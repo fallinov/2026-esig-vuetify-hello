@@ -34,6 +34,7 @@
 <template>
   <main>
     <h1>Mon Pokédex sur Infomaniak</h1>
+    <div>Toto</div>
     <p>{{ newPokemon }}</p>
     <div>
       <input ref="inputNewPokemon" v-model="newPokemon" type="text" @keyup.enter="addPokemon">
